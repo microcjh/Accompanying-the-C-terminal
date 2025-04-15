@@ -1,6 +1,6 @@
 <script setup>
 import { ref, getCurrentInstance, onMounted, reactive } from "vue";
-
+import { useRouter } from "vue-router";
 //获取当前vue实例
 const { proxy } = getCurrentInstance();
 //首页数据
@@ -11,8 +11,15 @@ const homeData = reactive({
   now: "",
   slides: [],
 });
-//
-const goOrderTwo = () => {};
+//快捷入口
+const router = useRouter();
+const goOrderTwo = (index) => {
+  router.push(`/createOrder?id=${homeData.hospitals[index].id}`);
+};
+//点击医院列表
+const goOrder = (data) => {
+  router.push(`/createOrder?id=${data.id}`);
+};
 onMounted(async () => {
   const { data } = await proxy.$api.index();
   Object.assign(homeData, data.data);
@@ -60,6 +67,7 @@ const searchValue = ref("");
     v-for="item in homeData.hospitals"
     justify="space-around"
     class="yy-list"
+    @click="goOrder(item)"
   >
     <van-col span="6">
       <van-image width="100" height="90" :src="item.avatar_url" />
