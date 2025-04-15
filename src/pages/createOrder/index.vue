@@ -7,7 +7,7 @@ import { reactive, getCurrentInstance, onMounted, ref, computed } from "vue";
 const { proxy } = getCurrentInstance();
 
 const createInfo = reactive({
-  companions: [],
+  companion: [],
   hospitals: [],
   service: {},
 });
@@ -48,6 +48,21 @@ const showTimeConfirm = (item) => {
   form.starttime = new Date(dateStr).getTime();
   showStartTime.value = false;
 };
+//选择陪诊师
+const showComponion = ref(false);
+const Componioncolumns = computed(() => {
+  return createInfo.companion.map((item) => {
+    return { text: item.name, value: item.id };
+  });
+});
+const componionName = ref();
+const showComponionConfirm = (item) => {
+  form.companion_id = item.selectedOptions[0].value;
+  componionName.value = item.selectedOptions[0].text;
+  showComponion.value = false;
+};
+//提交表单
+const submit = () => {};
 </script>
 
 <template>
@@ -99,8 +114,50 @@ const showTimeConfirm = (item) => {
           </div>
         </template>
       </van-cell>
+      <!-- 陪诊师选择 -->
+      <van-cell>
+        <template #title>陪诊师</template>
+        <template #default>
+          <div @click="showComponion = true">
+            {{ componionName || "请选择陪护师" }}
+            <van-icon name="arrow" />
+          </div>
+        </template>
+      </van-cell>
+      <van-cell>
+        <template #title>接送地址</template>
+        <template #default>
+          <van-field
+            v-model="form.receiveAddress"
+            placeholder="请填写接送地址"
+            class="text"
+            input-align="right"
+          />
+        </template>
+      </van-cell>
+      <van-cell>
+        <template #title>联系电话</template>
+        <template #default>
+          <van-field
+            v-model="form.tel"
+            placeholder="请填写联系电话"
+            class="text"
+            input-align="right"
+          />
+        </template>
+      </van-cell>
     </van-cell-group>
-
+    <van-cell-group title="服务需求" class="cell">
+      <van-field
+        v-model="form.demand"
+        placeholder="请简要描写你要就诊的科室.."
+        class="text"
+        style="height: 100px"
+      />
+    </van-cell-group>
+    <van-button @click="submit" class="sumbit" type="primary" size="large"
+      >提交订单</van-button
+    >
     <!-- 底部弹出就诊医院 -->
     <van-popup
       v-model:show="showHospital"
@@ -125,6 +182,19 @@ const showTimeConfirm = (item) => {
         :min-date="minDate"
         @confirm="showTimeConfirm"
         @cancel="showStartTime = false"
+      />
+    </van-popup>
+
+    <!-- 陪诊师选择 -->
+    <van-popup
+      v-model:show="showComponion"
+      position="bottom"
+      :style="{ height: '30%' }"
+    >
+      <van-picker
+        :columns="Componioncolumns"
+        @confirm="showComponionConfirm"
+        @cancel="showComponion = false"
       />
     </van-popup>
   </div>
