@@ -1,9 +1,41 @@
 <script setup>
 import { useRouter } from "vue-router";
 import statusBar from "../../components/statusBar.vue";
+import { reactive, getCurrentInstance, onMounted, ref, computed } from "vue";
+
+//获取当前vue实例
+const { proxy } = getCurrentInstance();
+
+const createInfo = reactive({
+  companions: [],
+  hospitals: [],
+  service: {},
+});
+onMounted(async () => {
+  const { data } = await proxy.$api.h5Companion();
+  Object.assign(createInfo, data.data);
+  console.log(createInfo);
+});
+
 const router = useRouter();
 const goBack = () => {
   router.go(-1);
+};
+//form数据
+const form = reactive({});
+//就诊医院
+const showHospital = ref();
+const showHospcolumns = computed(() => {
+  return createInfo.hospitals.map((item) => {
+    return { text: item.name, value: item.id };
+  });
+});
+//选择医院
+const showHosponConfirm = (item) => {
+  form.hospital_id = item.selectedOptions[0].value;
+  form.hospital_name = item.selectedOptions[0].text;
+  //关闭弹出窗
+  showHospital.value = false;
 };
 </script>
 
@@ -19,6 +51,45 @@ const goBack = () => {
       填写服务订单
     </div>
     <status-bar item="0" />
+    <van-cell class="cell">
+      <template #title>
+        <van-image
+          width="25"
+          height="25"
+          :src="createInfo.service.serviceImg"
+        />
+        <span class="server-name" margin-bottom="5px">{{
+          createInfo.service.serviceName
+        }}</span>
+      </template>
+
+      <template #default>
+        <div class="service-text">服务内容</div>
+      </template>
+    </van-cell>
+    <van-cell-group class="cell">
+      <van-cell>
+        <template #title>就诊医院</template>
+        <template #default>
+          <div @click="showHospital = true">
+            {{ form.hospital_name || "请选择就诊医院" }}
+            <van-icon name="arrow" />
+          </div>
+        </template>
+      </van-cell>
+    </van-cell-group>
+    <!-- 底部弹出 -->
+    <van-popup
+      v-model:show="showHospital"
+      position="bottom"
+      :style="{ height: '30%' }"
+    >
+      <van-picker
+        :columns="showHospcolumns"
+        @confirm="showHosponConfirm"
+        @cancel="showHospital = false"
+      />
+    </van-popup>
   </div>
 </template>
 
