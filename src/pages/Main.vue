@@ -4,7 +4,7 @@
     <van-tabbar-item
       v-for="item in router.options.routes[0].children"
       :key="item.path"
-      icon="item.meta.icon"
+      :icon="item.meta.icon"
       :url="`#/${item.path}`"
       >{{ item.meta.name }}</van-tabbar-item
     >
