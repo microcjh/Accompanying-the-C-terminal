@@ -2,7 +2,7 @@
 import { useRouter } from "vue-router";
 import statusBar from "../../components/statusBar.vue";
 import { reactive, getCurrentInstance, onMounted, ref, computed } from "vue";
-
+import Qrcode from "qrcode";
 //获取当前vue实例
 const { proxy } = getCurrentInstance();
 
@@ -61,8 +61,37 @@ const showComponionConfirm = (item) => {
   componionName.value = item.selectedOptions[0].text;
   showComponion.value = false;
 };
+//支付弹窗
+const showCode = ref(false);
+const codeImg = ref("");
+const closeCode = () => {
+  showCode.value = false;
+  router.push("/order");
+};
 //提交表单
-const submit = () => {};
+const submit = async () => {
+  const params = [
+    "hospital_id",
+    "hospital_name",
+    "demand",
+    "companion_id",
+    "receiveAddress",
+    "tel",
+    "starttime",
+  ];
+  for (const i of params) {
+    if (!form[i]) {
+      console.log(i);
+      showNotify({ message: "请把每一项都填写" });
+      return;
+    }
+  }
+  const { data: orderRes } = await proxy.$api.createOrder(form);
+  Qrcode.toDataURL(orderRes.data.wx_code).then((url) => {
+    showCode.value = true;
+    codeImg.value = url;
+  });
+};
 </script>
 
 <template>
@@ -197,10 +226,17 @@ const submit = () => {};
         @cancel="showComponion = false"
       />
     </van-popup>
+    <!-- 支付二维码 -->
+    <van-dialog v-model:show="showCode" :show-confirm-button="false">
+      <van-icon name="cross" class="close" @click="closeCode" />
+      <div>微信支付</div>
+      <van-image width="150" height="150" :src="codeImg" />
+      <div>请使用微信扫描二维码</div>
+    </van-dialog>
   </div>
 </template>
 
-<style lang="less" scope>
+<style lang="less" scoped>
 .container {
   background-color: #f0f0f0;
   height: 100vh;
@@ -221,13 +257,6 @@ const submit = () => {};
   background-color: #fff;
   ::v-deep(.van-field__control) {
     color: var(--van-cell-value-color);
-  }
-  ::v-deep(.van-cell__title) {
-    display: flex;
-    align-items: center;
-  }
-  .server-name {
-    margin-left: 10px;
   }
 }
 .service-text {
