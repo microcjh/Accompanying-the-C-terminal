@@ -37,6 +37,17 @@ const showHosponConfirm = (item) => {
   //关闭弹出窗
   showHospital.value = false;
 };
+//选择就诊时间
+const showStartTime = ref(false);
+const currentDate = ref();
+// 最小日期
+const minDate = ref(new Date());
+const showTimeConfirm = (item) => {
+  const dateStr = item.selectedValues.join("-");
+  currentDate.value = dateStr;
+  form.starttime = new Date(dateStr).getTime();
+  showStartTime.value = false;
+};
 </script>
 
 <template>
@@ -68,6 +79,7 @@ const showHosponConfirm = (item) => {
       </template>
     </van-cell>
     <van-cell-group class="cell">
+      <!-- 就诊医院选择 -->
       <van-cell>
         <template #title>就诊医院</template>
         <template #default>
@@ -77,8 +89,19 @@ const showHosponConfirm = (item) => {
           </div>
         </template>
       </van-cell>
+      <!-- 就诊时间选择 -->
+      <van-cell>
+        <template #title>就诊时间</template>
+        <template #default>
+          <div @click="showStartTime = true">
+            {{ currentDate || "请选择就诊时间" }}
+            <van-icon name="arrow" />
+          </div>
+        </template>
+      </van-cell>
     </van-cell-group>
-    <!-- 底部弹出 -->
+
+    <!-- 底部弹出就诊医院 -->
     <van-popup
       v-model:show="showHospital"
       position="bottom"
@@ -88,6 +111,20 @@ const showHosponConfirm = (item) => {
         :columns="showHospcolumns"
         @confirm="showHosponConfirm"
         @cancel="showHospital = false"
+      />
+    </van-popup>
+
+    <!-- 底部弹出就诊时间 -->
+    <van-popup
+      v-model:show="showStartTime"
+      position="bottom"
+      :style="{ height: '30%' }"
+    >
+      <van-date-picker
+        title="选择日期"
+        :min-date="minDate"
+        @confirm="showTimeConfirm"
+        @cancel="showStartTime = false"
       />
     </van-popup>
   </div>
